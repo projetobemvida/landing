@@ -1,72 +1,216 @@
+// Script para funcionalidade do menu mobile, interatividade da galeria e vídeos do Instagram
+
 document.addEventListener('DOMContentLoaded', function() {
-    const form = document.getElementById('contact-form');
-    if (form) {
-        form.addEventListener('submit', function(event) {
-            event.preventDefault(); // Prevent actual form submission
-
-            const nome = document.getElementById('nome').value.trim();
-            const email = document.getElementById('email').value.trim();
-            const telefone = document.getElementById('telefone').value.trim();
-
-            if (nome === '' || email === '' || telefone === '') {
-                alert('Por favor, preencha todos os campos obrigatórios: Nome, E-mail e Telefone.');
-                return;
-            }
-
-            if (!validateEmail(email)) {
-                alert('Por favor, insira um endereço de e-mail válido.');
-                return;
-            }
-
-            // If validation passes, you can handle the form submission here
-            // For example, send data to a server or display a success message
-            alert('Formulário enviado com sucesso!');
-            form.reset(); // Reset form fields after submission
+    // Menu mobile toggle
+    const menuToggle = document.querySelector('.menu-toggle');
+    const navMenu = document.querySelector('nav ul');
+    
+    menuToggle.addEventListener('click', function() {
+        navMenu.classList.toggle('active');
+    });
+    
+    // Fechar menu ao clicar em um item
+    const navLinks = document.querySelectorAll('nav ul li a');
+    navLinks.forEach(link => {
+        link.addEventListener('click', function() {
+            navMenu.classList.remove('active');
         });
-    }
-
-    function validateEmail(email) {
-        const re = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
-        return re.test(String(email).toLowerCase());
-    }
-
-    // Smooth scrolling for navigation links
+    });
+    
+    // Rolagem suave para as seções
     document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-        anchor.addEventListener('click', function (e) {
+        anchor.addEventListener('click', function(e) {
             e.preventDefault();
-            document.querySelector(this.getAttribute('href')).scrollIntoView({
+            
+            const targetId = this.getAttribute('href');
+            const targetSection = document.querySelector(targetId);
+            
+            window.scrollTo({
+                top: targetSection.offsetTop - 70,
                 behavior: 'smooth'
             });
         });
     });
-
-    // Scroll to top button (optional, but good for long pages)
-    const scrollTopButton = document.createElement('button');
-    scrollTopButton.innerHTML = '&uarr;'; // Up arrow
-    scrollTopButton.id = 'scrollTopBtn';
-    scrollTopButton.style.position = 'fixed';
-    scrollTopButton.style.bottom = '20px';
-    scrollTopButton.style.right = '20px';
-    scrollTopButton.style.padding = '10px 15px';
-    scrollTopButton.style.backgroundColor = '#003366';
-    scrollTopButton.style.color = '#fff';
-    scrollTopButton.style.border = 'none';
-    scrollTopButton.style.borderRadius = '5px';
-    scrollTopButton.style.cursor = 'pointer';
-    scrollTopButton.style.display = 'none'; // Hidden by default
-    document.body.appendChild(scrollTopButton);
-
-    window.addEventListener('scroll', function() {
-        if (window.pageYOffset > 300) { // Show button after scrolling 300px
-            scrollTopButton.style.display = 'block';
-        } else {
-            scrollTopButton.style.display = 'none';
+    
+    // Animação para os cards de serviço
+    const serviceCards = document.querySelectorAll('.service-card');
+    
+    // Função para verificar se elemento está visível na tela
+    function isElementInViewport(el) {
+        const rect = el.getBoundingClientRect();
+        return (
+            rect.top >= 0 &&
+            rect.left >= 0 &&
+            rect.bottom <= (window.innerHeight || document.documentElement.clientHeight) &&
+            rect.right <= (window.innerWidth || document.documentElement.clientWidth)
+        );
+    }
+    
+    // Função para animar elementos quando visíveis
+    function animateOnScroll() {
+        serviceCards.forEach(card => {
+            if (isElementInViewport(card)) {
+                card.style.opacity = 1;
+                card.style.transform = 'translateY(0)';
+            }
+        });
+    }
+    
+    // Inicialmente definir opacidade 0
+    serviceCards.forEach(card => {
+        card.style.opacity = 0;
+        card.style.transform = 'translateY(20px)';
+        card.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+    });
+    
+    // Chamar animação no scroll e no carregamento
+    window.addEventListener('scroll', animateOnScroll);
+    window.addEventListener('load', animateOnScroll);
+    
+    // Galeria de imagens - Lightbox simples
+    const galleryItems = document.querySelectorAll('.gallery-item');
+    
+    galleryItems.forEach(item => {
+        item.addEventListener('click', function() {
+            const imgSrc = this.querySelector('img').src;
+            const title = this.querySelector('h3').textContent;
+            const description = this.querySelector('p').textContent;
+            
+            // Criar lightbox
+            const lightbox = document.createElement('div');
+            lightbox.className = 'lightbox';
+            lightbox.innerHTML = `
+                <div class="lightbox-content">
+                    <span class="close">&times;</span>
+                    <h3>${title}</h3>
+                    <img src="${imgSrc}" alt="${title}">
+                    <p>${description}</p>
+                </div>
+            `;
+            
+            // Adicionar estilos inline para o lightbox
+            lightbox.style.position = 'fixed';
+            lightbox.style.top = '0';
+            lightbox.style.left = '0';
+            lightbox.style.width = '100%';
+            lightbox.style.height = '100%';
+            lightbox.style.backgroundColor = 'rgba(10, 59, 108, 0.9)';
+            lightbox.style.display = 'flex';
+            lightbox.style.alignItems = 'center';
+            lightbox.style.justifyContent = 'center';
+            lightbox.style.zIndex = '1001';
+            
+            const lightboxContent = lightbox.querySelector('.lightbox-content');
+            lightboxContent.style.position = 'relative';
+            lightboxContent.style.maxWidth = '80%';
+            lightboxContent.style.maxHeight = '80%';
+            lightboxContent.style.backgroundColor = 'white';
+            lightboxContent.style.padding = '20px';
+            lightboxContent.style.borderRadius = '10px';
+            lightboxContent.style.textAlign = 'center';
+            
+            const closeBtn = lightbox.querySelector('.close');
+            closeBtn.style.position = 'absolute';
+            closeBtn.style.top = '10px';
+            closeBtn.style.right = '15px';
+            closeBtn.style.fontSize = '30px';
+            closeBtn.style.fontWeight = 'bold';
+            closeBtn.style.cursor = 'pointer';
+            
+            const lightboxImg = lightbox.querySelector('img');
+            lightboxImg.style.maxWidth = '100%';
+            lightboxImg.style.maxHeight = '70vh';
+            lightboxImg.style.marginTop = '15px';
+            
+            // Adicionar ao body
+            document.body.appendChild(lightbox);
+            
+            // Fechar lightbox
+            closeBtn.addEventListener('click', function() {
+                document.body.removeChild(lightbox);
+            });
+            
+            // Fechar ao clicar fora da imagem
+            lightbox.addEventListener('click', function(e) {
+                if (e.target === lightbox) {
+                    document.body.removeChild(lightbox);
+                }
+            });
+        });
+    });
+    
+    // Atualizar número do WhatsApp no link
+    const whatsappBtn = document.querySelector('.whatsapp-btn');
+    const phoneNumber = '5511947499755'; // Número real do Rodrigo Silva
+    const message = 'Olá, gostaria de saber mais sobre seus serviços de instalação de carregadores.';
+    
+    whatsappBtn.href = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
+    
+    // Funcionalidade para os vídeos do Instagram
+    const videoThumbnails = document.querySelectorAll('.video-thumbnail');
+    const videoModal = document.getElementById('video-modal');
+    const videoFrame = document.getElementById('video-frame');
+    const closeModal = document.querySelector('.close-modal');
+    
+    // Função para extrair o ID do vídeo do Instagram
+    function getInstagramEmbedUrl(instagramUrl) {
+        // Extrair o ID do vídeo da URL do Instagram
+        const urlParts = instagramUrl.split('/');
+        const videoId = urlParts[urlParts.length - 2];
+        
+        // Criar URL de incorporação
+        return `https://www.instagram.com/p/${videoId}/embed/`;
+    }
+    
+    // Adicionar evento de clique para cada thumbnail
+    videoThumbnails.forEach(thumbnail => {
+        thumbnail.addEventListener('click', function() {
+            const videoUrl = this.getAttribute('data-video');
+            const embedUrl = getInstagramEmbedUrl(videoUrl);
+            
+            // Definir a URL do iframe
+            videoFrame.src = embedUrl;
+            
+            // Mostrar o modal
+            videoModal.style.display = 'block';
+            
+            // Impedir rolagem do body
+            document.body.style.overflow = 'hidden';
+        });
+    });
+    
+    // Fechar o modal ao clicar no X
+    closeModal.addEventListener('click', function() {
+        videoModal.style.display = 'none';
+        videoFrame.src = '';
+        document.body.style.overflow = 'auto';
+    });
+    
+    // Fechar o modal ao clicar fora do conteúdo
+    window.addEventListener('click', function(event) {
+        if (event.target === videoModal) {
+            videoModal.style.display = 'none';
+            videoFrame.src = '';
+            document.body.style.overflow = 'auto';
         }
     });
-
-    scrollTopButton.addEventListener('click', function() {
-        window.scrollTo({top: 0, behavior: 'smooth'});
-    });
-
+    
+    // Gerar thumbnails para os vídeos
+    function generateVideoThumbnails() {
+        const videoItems = document.querySelectorAll('.video-item');
+        
+        videoItems.forEach((item, index) => {
+            // Usar as imagens reais dos carregadores como thumbnails temporários
+            const thumbnailImg = item.querySelector('img');
+            if (thumbnailImg) {
+                // Usar imagens da galeria como thumbnails temporários
+                const galleryImages = ['carregador1.jpg', 'carregador2.jpg', 'carregador3.jpg', 'carregador4.jpg'];
+                const imageIndex = index % galleryImages.length;
+                thumbnailImg.src = `images/${galleryImages[imageIndex]}`;
+            }
+        });
+    }
+    
+    // Inicializar thumbnails
+    generateVideoThumbnails();
 });
-
